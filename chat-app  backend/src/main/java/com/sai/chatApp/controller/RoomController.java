@@ -61,7 +61,7 @@ public class RoomController {
            @RequestParam(value ="page" , defaultValue = "0", required = false) int page,
            @RequestParam(value ="size" , defaultValue = "20", required = false) int size
             ){
-         System.out.println("Fetching message fro roomId");
+         System.out.println("Fetching message from roomId");
          Room room = roomRepository.findByRoomId(roomId);
          if(room == null){
              return ResponseEntity.badRequest().build();

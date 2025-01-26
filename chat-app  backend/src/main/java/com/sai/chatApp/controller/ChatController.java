@@ -24,14 +24,13 @@ public class ChatController {
 
 
     public ChatController(RoomRepository roomRepository) {
-
         this.roomRepository = roomRepository;
     }
 
 
     // for sending and receiving messages
     @MessageMapping("/sendMessage/{roomId}")          //  message sends at   /app/sendMessage
-    @SendTo("/topic/room/{roomId")          // Subscribe
+    @SendTo("/topic/room/{roomId}")          // Subscribe
     public Message sendMessage(
 
             @DestinationVariable String roomId,

@@ -1,7 +1,9 @@
 import chatIcon from "../assets/chat.png";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { createRoom } from "../services/RoomService";
+import { createRoom as createRoomApi, joinChatApi } from "../services/RoomService";
+import useChatContext from "../context/ChatContext";
+import { useNavigate } from "react-router";
 
 const JoinCreateChat = () => {
 
@@ -9,6 +11,11 @@ const JoinCreateChat = () => {
         roomId:'',
         userName:'',
     })
+
+
+    const {roomId, userName,connected, setRoomId, setCurrentUser,setConnected}= useChatContext()
+    const navigate= useNavigate();
+
 
     function handleFormInputChange(event){
         setDetail({
@@ -26,10 +33,28 @@ const JoinCreateChat = () => {
         return true;
     }
 
-    function joinChat(){
-
+    async function joinChat(){
         if(validateForm()){
             //Join Room
+            
+            try {
+                const room = await joinChatApi(detail.roomId);
+                toast.success("Joined Room !!!")
+                setCurrentUser(detail.userName);
+                setRoomId(detail.roomId);
+                setConnected(true);
+
+                navigate('/chat')
+                
+            } catch (error) {
+                if(error.status=400){
+                    toast.error(error.response.data)
+                }
+                else{
+                    toast.error("Error in joining the room")
+                }
+                console.log(error)
+            }
         }
 
     }
@@ -41,12 +66,25 @@ const JoinCreateChat = () => {
             console.log(detail)
             // call api to create room on backend
             try {
-                const response=createRoom(detail.roomId)
+                const response= await createRoomApi(detail.roomId)
                 console.log(response)
                 toast.success("Room Created Successfully");
+                // Join the Room
+                setCurrentUser(detail.userName)
+                setRoomId(detail.roomId)
+                setConnected(true)
+
+                // forward to chat page
+                navigate("/chat")
+
+
             } catch (error) {
-                console.log(error)
-                console.log("Error in creatin room")
+                if(error.status==400){
+                    toast.error("Room already Exists !!")
+                }else{
+                    toast("Error in creating room")
+                }
+                
             }
         }
         
@@ -79,7 +117,7 @@ const JoinCreateChat = () => {
         {/* Room id  div*/}
         <div className="">
             <label htmlFor="name" className="block font-medium mb-2">Room ID / New Room ID</label>
-            <input  onClick={handleFormInputChange}
+            <input  onChange={handleFormInputChange}
                     value={detail.roomId}
                     name="roomId"
                     placeholder="Enter RoomID"
